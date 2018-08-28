@@ -254,9 +254,7 @@ Equations
     COMMODITY_BALANCE               commodity supply-demand balance constraint
     STOCKS_BALANCE                  commodity inter-temporal balance of stocks
     CAPACITY_CONSTRAINT             capacity constraint for technology (by sub-annual time slice)
-    CAPACITY_MAINTENANCE_HIST       constraint for capactiy maintainance  historical installation (built before start of model horizon)
-    CAPACITY_MAINTENANCE_NEW        constraint for capactiy maintainance of new capacity built in the current period (vintage == year)
-    CAPACITY_MAINTENANCE            constraint for capacity maintainance over the technical lifetime
+    CAPACITY_MAINTENANCE            constraint for technology capacity maintainance
     OPERATION_CONSTRAINT            constraint on maximum yearly operation (scheduled down-time for maintainance)
     MIN_UTILIZATION_CONSTRAINT      constraint for minimum yearly operation (aggregated over the course of a year)
     RENEWABLES_POTENTIAL_CONSTRAINT constraint on renewable resource potential
@@ -631,71 +629,7 @@ CAPACITY_CONSTRAINT(node,inv_tec,vintage,year,time)$( map_tec_time(node,inv_tec,
         =L= duration_time(time) * capacity_factor(node,inv_tec,vintage,year,time) * CAP(node,inv_tec,vintage,year) ;
 
 ***
-* Equation CAPACITY_MAINTENANCE_HIST 
-* """"""""""""""""""""""""""""""""""
-* The following three constraints implement technology capacity maintenance over time to allow early retirment.
-* The optimization problem determines the optimal timing of retirement, when fixed operation-and-maintenance costs
-* exceed the benefit in the objective function.
-*
-* The first constraint ensures that historical capacity (built prior to the model horizon) is available
-* as installed capacity in the first model period.
-*
-*   .. math::
-*      CAP_{n,t,y^V,'first\_period'} & \leq
-*          remaining\_capacity_{n,t,y^V,'first\_period'} \cdot
-*          duration\_period_{y^V} \cdot
-*          historical\_new\_capacity_{n,t,y^V} \\
-*      & \text{if } y^V  < 'first\_period' \text{ and } |y| - |y^V| < technical\_lifetime_{n,t,y^V}
-*      \quad \forall \ t \in T^{INV}
-*
-***
-CAPACITY_MAINTENANCE_HIST(node,inv_tec,vintage,first_period)$( map_tec_lifetime(node,inv_tec,vintage,first_period)
-        AND historical(vintage))..
-    CAP(node,inv_tec,vintage,first_period)
-    =L= remaining_capacity(node,inv_tec,vintage,first_period) *
-        duration_period(vintage) * historical_new_capacity(node,inv_tec,vintage) ;
 
-***
-* Equation CAPACITY_MAINTENANCE_NEW
-* """""""""""""""""""""""""""""""""
-* The second constraint ensures that capacity is fully maintained throughout the model period
-* in which it was constructed (no early retirement in the period of construction).
-*
-*   .. math::
-*      CAP_{n,t,y^V,y^V} =
-*          remaining\_capacity_{n,t,y^V,y^V} \cdot
-*          duration\_period_{y^V} \cdot
-*          CAP\_NEW{n,t,y^V}
-*      \quad \forall \ t \in T^{INV}
-*
-* The current formulation does not account for construction time in the constraints, but only adds a mark-up
-* to the investment costs in the objective function.
-***
-CAPACITY_MAINTENANCE_NEW(node,inv_tec,vintage,vintage)$( map_tec_lifetime(node,inv_tec,vintage,vintage) )..
-    CAP(node,inv_tec,vintage,vintage)
-    =E= remaining_capacity(node,inv_tec,vintage,vintage)
-        * duration_period(vintage) * CAP_NEW(node,inv_tec,vintage) ;
-
-***
-* Equation CAPACITY_MAINTENANCE
-* """""""""""""""""""""""""""""
-* The third constraint implements the dynamics of capacity maintenance throughout the model horizon.
-* Installed capacity can be maintained over time until decommissioning, which is irreversible.
-*
-*   .. math::
-*      CAP_{n,t,y^V,y} & \leq
-*          remaining\_capacity_{n,t,y^V,y} \cdot
-*          CAP_{n,t,y^V,y-1} \\
-*      \quad & \text{if } y > y^V \text{ and } y^V  > 'first\_period' \text{ and } |y| - |y^V| < technical\_lifetime_{n,t,y^V}
-*      \quad \forall \ t \in T^{INV}
-*
-***
-CAPACITY_MAINTENANCE(node,inv_tec,vintage,year)$( map_tec_lifetime(node,inv_tec,vintage,year)
-        AND NOT historical(vintage) AND year_order(vintage) < year_order(year))..
-    CAP(node,inv_tec,vintage,year)
-    =L= remaining_capacity(node,inv_tec,vintage,year) *
-        ( SUM(year2$( seq_period(year2,year) ),
-              CAP(node,inv_tec,vintage,year2) ) ) ;
 
 ***
 * Equation OPERATION_CONSTRAINT
