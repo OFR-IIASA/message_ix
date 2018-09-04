@@ -1,0 +1,6 @@
+CD_Links_SSP2_baseline:
+      model: CD_Links_SSP2
+      scenario: baseline
+      obs: scen.var('OBJ')['lvl']
+      exp: 2486801.25
+      test: assert obs == exp
