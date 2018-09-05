@@ -432,4 +432,10 @@ class Scenario(ixmp.Scenario):
         for sheet_name, df in dfs.items():
             if sheet_name not in skip_sheets and not df.empty:
                 ix_type = ix_types[sheet_name]
+                if ix_type == 'par':
+                    if 'unit' in df.columns:
+                        unt = df['unit'].unique().tolist()
+                        for u in unt:
+                            if u not in self.platform.units():
+                                self.platform.add_unit(u, comment="added new unit for model")
                 funcs[ix_type](sheet_name, df)
