@@ -59,35 +59,47 @@ def _init_macro(s):
     for i in init['macro']['set']:
         try:
             print('Initiating', i)
-            s.init_set(i, idx_sets=init['macro']['set'][i])
+            if len(init['macro']['set'][i]) == 0:
+                s.init_set(i)
+            else:
+                s.init_set(i, idx_sets=init['macro']['set'][i])
         except:
             continue
 
-    for i in init['macro']['add_set']:
-        try:
-            print('Initiating', i)
-            s.add_set(i, init['macro']['add_set'][i])
-        except:
-            continue
+    #for i in init['macro']['add_set']:
+    #    try:
+    #        print('Initiating', i)
+    #        s.add_set(i, init['macro']['add_set'][i])
+    #    except:
+    #        continue
 
     for i in init['macro']['par']:
         try:
-            print('Initiating', i)
-            s.init_par(i, idx_sets=init['macro']['par'][i])
+            print('Initializing', i)
+            if len(init['macro']['par'][i]) == 0:
+                s.init_par(i)
+            else:
+                s.init_par(i, idx_sets=init['macro']['par'][i])
         except:
             continue
 
     for i in init['macro']['var']:
         try:
-            print('Initiating', i)
-            s.init_var(i, idx_sets=init['macro']['var'][i])
+            print('Initializing', i)
+            if len(init['macro']['var'][i]) == 0:
+                s.init_var(i)
+            else:
+                s.init_var(i, idx_sets=init['macro']['var'][i])
         except:
             continue
 
     for i in init['macro']['equ']:
         try:
-            print('Initiating', i)
-            s.add_equ(i, idx_sets=init['macro']['equ'][i])
+            print('Initializing', i)
+            if len(init['macro']['equ'][i]) == 0:
+                s.init_equ(i)
+            else:
+                s.add_equ(i, idx_sets=init['macro']['equ'][i])
         except:
             continue
 
