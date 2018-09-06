@@ -12,7 +12,7 @@ from paths import dbpath
 template = """
 def test_{name}():
     mp = ixmp.Platform(dbpath, dbtype='HSQLDB')
-    scen = message_ix.Scenario(mp, {model}, {scenario})
+    scen = message_ix.Scenario(mp, '{model}', '{scenario}')
     scen.solve('{solve}')
     obs = {obs}
     exp = {exp}
