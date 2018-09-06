@@ -29,8 +29,12 @@ else:
     raise IOError(
         'Failed download with user/pass: {}/{}'.format(username, password))
 
+import glob
+
+for filename in glob.iglob('./*', recursive=True):
+         print(filename)
 
 mp = ixmp.Platform(dbpath, dbtype='HSQLDB')
-print()
+print('')
 print('Currently available scenarios:')
 print(mp.scenario_list())
