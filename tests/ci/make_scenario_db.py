@@ -3,6 +3,8 @@ import yaml
 import ixmp
 import message_ix
 
+from message_ix import macro
+
 
 def main():
     mp = ixmp.Platform('scenario_db', dbtype='HSQLDB')
@@ -10,7 +12,8 @@ def main():
         for name, data in yaml.load(f).items():
             scen = message_ix.Scenario(
                 mp, data['model'], data['scenario'], version='new')
-            scen.read_excel(name + '.xlsx')
+            macro.init(scen)
+            scen.read_excel(name + '.xlsx', add_units=True)
             scen.commit('saving')
 
 
