@@ -11,6 +11,10 @@ jobs:
           name: Build Python2 Image
           command: docker build --build-arg base_image=gidden/ixmp-py2 -t message_ix/message_ix:py2 .
       - run:
+          name: Python2 Scenario Tests
+          command: |
+                docker run message_ix/message_ix:py2 /bin/bash -c 'source activate root && cd /message_ix/tests/ci && python generate_test_file.py && python download_db.py && pytest -v .'
+      - run:
           name: Python2 Tests
           command: |
                 docker run message_ix/message_ix:py2 /bin/bash -c 'source activate root && pytest -v /message_ix/tests'
