@@ -13,7 +13,11 @@ jobs:
       - run:
           name: Python2 Scenario Tests
           command: |
-                docker run message_ix/message_ix:py2 /bin/bash -c 'source activate root && cd /message_ix/tests/ci && python generate_test_file.py && python download_db.py && pytest -v .'
+                docker run \
+		-e MESSAGE_IX_CI_USER=$MESSAGE_IX_CI_USER \
+		-e MESSAGE_IX_CI_PW=$MESSAGE_IX_CI_PW \
+		message_ix/message_ix:py2 \
+		/bin/bash -c 'source activate root && cd /message_ix/tests/ci && python generate_test_file.py && python download_db.py && pytest -v .'
       - run:
           name: Python2 Tests
           command: |
