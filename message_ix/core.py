@@ -395,19 +395,22 @@ class Scenario(ixmp.Scenario):
 
         pd_write(dfs, fname, index=False)
 
-    def read_excel(self, fname):
+    def read_excel(self, fname, add_units=False):
         """Read Excel file data and load into the scenario.
 
         Parameters
         ----------
         fname : string
             path to file
+        add_units : bool
+            add missing units, if any,  to the platform instance. default: False
         """
         funcs = {
             'set': self.add_set,
             'par': self.add_par,
         }
 
+        logger().info('Reading data from {}'.format(fname))
         dfs = pd_read(fname, sheet_name=None)
 
         # get item-type mapping
@@ -425,11 +428,21 @@ class Scenario(ixmp.Scenario):
             data = list(dfs[name][col])
             if len(data) > 0:
                 ix_type = ix_types[name]
+                logger().info('Loading data for {}'.format(name))
                 funcs[ix_type](name, data)
 
         # fill all other pars and sets, skipping those already done
         skip_sheets = ['ix_type_mapping'] + prefill
         for sheet_name, df in dfs.items():
             if sheet_name not in skip_sheets and not df.empty:
+                logger().info('Loading data for {}'.format(sheet_name))
+                if add_units and 'unit' in df.columns:
+                    # add missing units
+                    units = set(self.platform.units())
+                    missing = set(df['unit'].unique()) - units
+                    for unit in missing:
+                        logger().info('Adding missing unit: {}'.format(unit))
+                        self.platform.add_unit(unit)
+                # load data
                 ix_type = ix_types[sheet_name]
                 funcs[ix_type](sheet_name, df)
