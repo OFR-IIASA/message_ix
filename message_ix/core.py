@@ -395,19 +395,21 @@ class Scenario(ixmp.Scenario):
 
         pd_write(dfs, fname, index=False)
 
-    def read_excel(self, fname):
+    def read_excel(self, fname, add_units=False):
         """Read Excel file data and load into the scenario.
-
         Parameters
         ----------
         fname : string
             path to file
+        add_units : bool
+            add missing units, if any,  to the platform instance. default: False
         """
         funcs = {
             'set': self.add_set,
             'par': self.add_par,
         }
 
+        logger().info('Reading data from {}'.format(fname))
         dfs = pd_read(fname, sheet_name=None)
 
         # get item-type mapping
@@ -421,144 +423,26 @@ class Scenario(ixmp.Scenario):
             return dfs[x].columns[0] == col and len(dfs[x].columns) == 1
 
         prefill = [x for x in dfs if is_prefill(x)]
-#        print('Initializing macro')
-#        #from message_ix.macro import _init_macro
-#        #_init_macro(self)
-#        init = {'macro':
-#                {'set': {'node': [],
-#                         'type_node': [],
-#                         'cat_node': ['type_node','node'],
-#                         'year': [],
-#                         'commodity': [],
-#                         'level': [],
-#                         'type_year': [],
-#                         'cat_year': ['type_year','year'],
-#                         'sector': [],
-#                         'mapping_macro_sector': ['sector', 'commodity', 'level'],
-#                         },
-#                 'add_set': {'type_node': ['economy'],
-#                             'type_year': ['baseyear_macro','initializeyear_macro'],
-#                             'cat_year': ['baseyear_macro.2010','initializeyear_macro.2010']
-#                             },
-#                 'par': {'demand_MESSAGE': ['node', 'sector', 'year'],
-#                         'price_MESSAGE': ['node', 'sector', 'year'],
-#                         'cost_MESSAGE': ['node','year'],
-#                         'gdp_calibrate': ['node','year'],
-#                         'historical_gdp': ['node','year'],
-#                         'MERtoPPP': ['node','year'],
-#                         'kgdp': ['node'],
-#                         'kpvs': ['node'],
-#                         'depr': ['node'],
-#                         'drate': ['node'],
-#                         'esub': ['node'],
-#                         'lotol': ['node'],
-#                         'p_ref': ['node','sector'],
-#                         'lakl': ['node'],
-#                         'prfconst': ['node','sector'],
-#                         'grow': ['node','year'],
-#                         'aeei': ['node', 'sector', 'year'],
-#                         },
-#                 'var': {'DEMAND': ['node','commodity','level','year','time'],
-#                         'PRICE': ['node','commodity','level','year','time'],
-#                         'COST_NODAL': ['node', 'year'],
-#                         'COST_NODAL_NET': ['node', 'year'],
-#                         'GDP': ['node','year'],
-#                         'I': ['node','year'],
-#                         'C': ['node','year'],
-#                         'K': ['node','year'],
-#                         'KN': ['node','year'],
-#                         'Y': ['node','year'],
-#                         'YN': ['node','year'],
-#                         'EC': ['node','year'],
-#                         'UTILITY': [],
-#                         'PHYSENE': ['node','sector','year'],
-#                         'PRODENE': ['node','sector','year'],
-#                         'NEWENE': ['node','sector','year'],
-#                         'grow_calibrate': ['node','year'],
-#                         'aeei_calibrate': ['node','sector','year'],
-#                         },
-#                'equ': {'COST_ACCOUNTING_NODAL': ['node', 'year'],
-#                        }
-#                 }}
-#
-#        for i in init['macro']['set']:
-#            if i not in self.set_list():
-#                if len(init['macro']['set'][i]) == 0:
-#                    print('Initializing', i)
-#                    self.init_set(i)
-#                else:
-#                    print('Initializing', i, 'with idx_sets', init['macro']['set'][i])
-#                    self.init_set(i, init['macro']['set'][i])
-#            #except:
-#            #    continue
-#
-#        #for i in init['macro']['add_set']:
-#        #    try:
-#        #        print('Initiating', i)
-#        #        self.add_set(i, init['macro']['add_set'][i])
-#        #    except:
-#        #        continue
-#
-#        for i in init['macro']['par']:
-#            #try:
-#            if i not in self.par_list():
-#                if len(init['macro']['par'][i]) == 0:
-#                    print('Initializing', i)
-#                    self.init_par(i)
-#                else:
-#                    print('Initializing', i, 'with idx_sets', init['macro']['par'][i])
-#                    self.init_par(i, init['macro']['par'][i])
-#            #except:
-#            #    continue
-#
-#        #for i in init['macro']['var']:
-#        #    #try:
-#        #    if i not in self.var_list():
-#        #        if len(init['macro']['var'][i]) == 0:
-#        #            print('Initializing', i)
-#        #            self.init_var(i)
-#        #        else:
-#        #            print('Initializing', i, 'with idx_sets', init['macro']['var'][i])
-#        #            self.init_var(i, init['macro']['var'][i])
-#        #    #except:
-#        #    #    continue
-#
-#        for i in init['macro']['equ']:
-#            #try:
-#            if i not in self.equ_list():
-#                if len(init['macro']['equ'][i]) == 0:
-#                    print('Initializing', i)
-#                    self.init_equ(i)
-#                else:
-#                    print('Initializing', i, 'with idx_sets', init['macro']['equ'][i])
-#                    self.init_equ(i, init['macro']['equ'][i])
-#            #except:
-#            #    continue
-
-        print(prefill)
         for name in prefill:
             data = list(dfs[name][col])
             if len(data) > 0:
                 ix_type = ix_types[name]
-                if name not in eval('self.{}_list()'.format(ix_type)):
-                    continue
-                print('Processing', name, data)
-                for dt in data:
-                    funcs[ix_type](name, dt)
-        self.commit('saving')
-        self.check_out()
+                logger().info('Loading data for {}'.format(name))
+                funcs[ix_type](name, data)
 
         # fill all other pars and sets, skipping those already done
         skip_sheets = ['ix_type_mapping'] + prefill
         for sheet_name, df in dfs.items():
             if sheet_name not in skip_sheets and not df.empty:
+                logger().info('Loading data for {}'.format(sheet_name))
+                if add_units and 'unit' in df.columns:
+                    # add missing units
+                    units = set(self.platform.units())
+                    missing = set(df['unit'].unique()) - units
+                    for unit in missing:
+                        logger().info('Adding missing unit: {}'.format(unit))
+                        self.platform.add_unit(unit)
+                # load data
                 ix_type = ix_types[sheet_name]
-                print('Processing', sheet_name)
-                if ix_type == 'par':
-                    if 'unit' in df.columns:
-                        unt = df['unit'].unique().tolist()
-                        for u in unt:
-                            if u not in self.platform.units():
-                                self.platform.add_unit(u, comment="added new unit for model")
                 funcs[ix_type](sheet_name, df)
                 
