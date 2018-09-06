@@ -31,8 +31,11 @@ else:
 
 import glob
 
-for filename in glob.iglob('./*', recursive=True):
-         print(filename)
+for filename in glob.glob('./*'):
+    print(filename)
+
+for filename in glob.glob('./db/*'):
+    print(filename)
 
 mp = ixmp.Platform(dbpath, dbtype='HSQLDB')
 print('')
