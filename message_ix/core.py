@@ -403,9 +403,11 @@ class Scenario(ixmp.Scenario):
         fname : string
             path to file
         add_units : bool
-            add missing units, if any,  to the platform instance. default: False
+            add missing units, if any,  to the platform instance.
+            default: False
         commit_steps : bool
-            commit changes after every data addition. default: False
+            commit changes after every data addition.
+            default: False
         """
         funcs = {
             'set': self.add_set,
