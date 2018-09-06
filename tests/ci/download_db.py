@@ -5,7 +5,8 @@ import tarfile
 username = os.environ['MESSAGE_IX_CI_USER']
 password = os.environ['MESSAGE_IX_CI_PW']
 
-url = 'https://data.ene.iiasa.ac.at/continuous_integration/scenario_db/db.tar.gz'
+url = 'https://data.ene.iiasa.ac.at/continuous_integration/' +\
+      'scenario_db/db.tar.gz'
 filename = os.path.basename(url)
 
 print(filename)
