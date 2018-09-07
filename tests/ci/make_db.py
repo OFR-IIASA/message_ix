@@ -1,3 +1,5 @@
+import os
+import shutil
 import yaml
 
 import ixmp
@@ -5,10 +7,15 @@ import message_ix
 
 from message_ix import macro
 
+from paths import dbpath
+
 
 
 def main():
-    mp = ixmp.Platform('scenario_db', dbtype='HSQLDB')
+    if os.path.exists(dbpath):
+        shutil.rmtree(dbpath)
+
+    mp = ixmp.Platform(dbpath, dbtype='HSQLDB')
     with open('scenarios.yaml', 'r') as f:
         for name, data in yaml.load(f).items():
             scen = message_ix.Scenario(

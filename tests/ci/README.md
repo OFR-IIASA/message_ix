@@ -7,20 +7,37 @@ aspects:
 - `MESSAGE_IX_CI_USER`
 - `MESSAGE_IX_CI_PW`
 
+For posterity, ask Oliver Fricko, Matthew Gidden, or Peter Kolp for the correct
+values.
+
 # Generate the Database
 
 To generate and upload the database execute the follow files in order:
 
 1. `fetch_scenarios.py`
-2. `make_scenario_db.py`
-3. `upload_scenario_db.sh`
+2. `make_db.py`
+3. `upload_db.sh`
+
+## `upload_db.sh`
+
+This command must be run by passing your ssh information, so either
+
+```
+./upload_db.sh <user>@data.ene.iiasa.ac.at
+```
+
+or
+
+```
+./upload_db.sh <ssh alias>
+```
 
 # Tests running on CI
 
 These tests are designed to run on CI. To do so, one must download the test
 database, generate the test file, and run `pytest`.
 
-Downloading the database is done with `download_scenario_db.py`.
+Downloading the database is done with `download_db.py`.
 
 Generating the test file is done with `generate_test_file.py`.
 

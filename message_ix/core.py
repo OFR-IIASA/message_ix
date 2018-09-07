@@ -395,14 +395,18 @@ class Scenario(ixmp.Scenario):
 
         pd_write(dfs, fname, index=False)
 
-    def read_excel(self, fname, add_units=False):
+    def read_excel(self, fname, add_units=False, commit_steps=False):
         """Read Excel file data and load into the scenario.
         Parameters
         ----------
         fname : string
             path to file
         add_units : bool
-            add missing units, if any,  to the platform instance. default: False
+            add missing units, if any,  to the platform instance.
+            default: False
+        commit_steps : bool
+            commit changes after every data addition.
+            default: False
         """
         funcs = {
             'set': self.add_set,
@@ -429,6 +433,9 @@ class Scenario(ixmp.Scenario):
                 ix_type = ix_types[name]
                 logger().info('Loading data for {}'.format(name))
                 funcs[ix_type](name, data)
+        if commit_steps:
+            self.commit('Loaded initial data from {}'.format(fname))
+            self.check_out()
 
         # fill all other pars and sets, skipping those already done
         skip_sheets = ['ix_type_mapping'] + prefill
@@ -445,4 +452,6 @@ class Scenario(ixmp.Scenario):
                 # load data
                 ix_type = ix_types[sheet_name]
                 funcs[ix_type](sheet_name, df)
-                
+                if commit_steps:
+                    self.commit('Loaded {} from {}'.format(sheet_name, fname))
+                    self.check_out()
