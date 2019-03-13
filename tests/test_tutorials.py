@@ -6,6 +6,7 @@ import pytest
 
 import numpy as np
 
+from distutils.spawn import find_executable
 from conftest import here
 
 is_py2 = sys.version_info[0] == 2
@@ -21,6 +22,12 @@ westeros_path = os.path.join(here, '..', 'tutorial', 'westeros')
 
 py2_deprecated = 'Python 2 is deprecated in the tutorials'
 jupyter_required = 'requires Jupyter Notebook to be installed'
+
+# look for gamslice.txt wherever gams is installed
+has_gamslice = os.path.exists(
+    os.path.join(os.path.dirname(find_executable('gams')), 'gamslice.txt')
+)
+gamslice_required = 'Requires GAMS license file'
 
 # taken from the execellent example here:
 # https://blog.thedataincubator.com/2016/06/testing-jupyter-notebooks/
@@ -62,7 +69,7 @@ def get_cell_by_name(nb, name):
     metadata attribute for each cell:
 
     https://nbformat.readthedocs.io/en/latest/format_description.html
-                                                                #cell-metadata
+                                                                # cell-metadata
 
     Return the cell matching the name, or raise ValueError.
     """
@@ -128,6 +135,7 @@ def test_westeros_flexible_generation(capsys):
 
 @pytest.mark.skipif(is_py2, reason=py2_deprecated)
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_required)
+@pytest.mark.skipif(not has_gamslice, reason=gamslice_required)
 def test_austria(capsys):
     fname = os.path.join(ene_path, 'austria.ipynb')
     nb, errors = _notebook_run(fname, capsys=capsys)
@@ -141,6 +149,7 @@ def test_austria(capsys):
 
 @pytest.mark.skipif(is_py2, reason=py2_deprecated)
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_required)
+@pytest.mark.skipif(not has_gamslice, reason=gamslice_required)
 def test_austria_single_policy():
     fname = os.path.join(ene_path, 'austria_single_policy.ipynb')
     nb, errors = _notebook_run(fname)
@@ -154,6 +163,7 @@ def test_austria_single_policy():
 
 @pytest.mark.skipif(is_py2, reason=py2_deprecated)
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_required)
+@pytest.mark.skipif(not has_gamslice, reason=gamslice_required)
 def test_austria_multiple_policies():
     fname = os.path.join(ene_path, 'austria_multiple_policies.ipynb')
     nb, errors = _notebook_run(fname)
@@ -162,6 +172,7 @@ def test_austria_multiple_policies():
 
 @pytest.mark.skipif(is_py2, reason=py2_deprecated)
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_required)
+@pytest.mark.skipif(not has_gamslice, reason=gamslice_required)
 def test_austria_multiple_policies_answers():
     fname = os.path.join(ene_path, 'austria_multiple_policies-answers.ipynb')
     nb, errors = _notebook_run(fname)
@@ -170,6 +181,7 @@ def test_austria_multiple_policies_answers():
 
 @pytest.mark.skipif(is_py2, reason=py2_deprecated)
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_required)
+@pytest.mark.skipif(not has_gamslice, reason=gamslice_required)
 def test_austria_load():
     fname = os.path.join(ene_path, 'austria_load_scenario.ipynb')
     nb, errors = _notebook_run(fname)
