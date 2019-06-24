@@ -3,7 +3,6 @@
 *
 * Sets and mappings definition
 * =============================
-* This page is generated from the auto-documentation in ``MESSAGE/sets_maps_def.gms``.
 *
 * This file contains the definition of all sets and mappings used in |MESSAGEix|.
 ***
@@ -202,6 +201,10 @@ Alias(mode, mode2);
 *    * - type_tec_land (type_tec) [#type_tec_land]_
 *      - :math:`\widehat{t} \in \widehat{T}^{LAND} \subseteq \widehat{T}`
 *      - Mapping set of technology types and land use
+*    * - balance_equality (commodity,level)
+*      - :math:`c \in C^{FULL} \subseteq C`
+*      - :math:`l \in L^{FULL} \subseteq L`
+*      - Commodities and level related to `Equation COMMODITY_BALANCE_LT`_
 *
 * .. [#level_res] The constraint ``EXTRACTION_EQUIVALENCE`` is active only for the levels included in this set,
 *    and the constraint ``COMMODITY_BALANCE`` is deactivated for these levels.
@@ -243,6 +246,7 @@ Sets
     type_emission                           types of emission aggregations
     cat_emission(type_emission,emission)    mapping of emissions to respective categories
     type_tec_land(type_tec)                 dynamic set whether emissions from land use are included in type_tec
+    balance_equality(commodity,level)       mapping of commodities-level where the supply-demand balance must be maintained with equality
 ;
 
 Alias(type_tec,type_tec_share);
@@ -297,7 +301,7 @@ Sets
         node,type_tec,mode,commodity,level)   mapping for commodity share constraints (numerator)
     map_shares_commodity_total(shares,node,
         node,type_tec,mode,commodity,level)   mapping for commodity share constraints (denominator)
-    
+
     map_land(node,land_scenario,year_all)            mapping of land-use model emulator scenarios to nodes and years
     map_relation(relation,node,year_all)             mapping of generic (user-defined) relations to nodes and years
 ;

@@ -40,7 +40,6 @@ $OFFTEXT
 ***
 * Run script for |MESSAGEix| and MACRO
 * ====================================
-* This page is generated from the auto-documentation in ``model/MESSAGE-MACRO_run.gms``.
 *
 * This is |MESSAGEix|-MACRO version |version|. The version number must match the version number
 * of the ``ixmp`` ``MESSAGE``-scheme specifications used for exporting data and importing results.
@@ -177,39 +176,6 @@ price_diff_rel(iteration,node_macro,sector,year)$( price_init(node_macro,sector,
 price_init(node_macro,sector,year) = SUM((commodity, level, time) $ mapping_macro_sector(sector, commodity, level),
                                         PRICE_COMMODITY.l(node_macro,commodity,level,year,time) ) ;
 
-* calculation of commodity import costs by node, commodity and year
-import_cost(node2, commodity, year) =
-          SUM( (node,tec,vintage,mode,level,time,time2)$( (NOT sameas(node,node2)) AND map_tec_act(node2,tec,year,mode,time2)
-            AND map_tec_lifetime(node2,tec,vintage,year) AND map_commodity(node,commodity,level,year,time) ),
-* import into node2 from other nodes
-          input(node2,tec,vintage,year,mode,node,commodity,level,time2,time)
-        * duration_time_rel(time,time2) * ACT.L(node2,tec,vintage,year,mode,time2)
-        * COMMODITY_BALANCE.M(node,commodity,level,year,time) / discountfactor(year) )
-;
-
-* calculation of commodity export costs by node, commodity and year
-export_cost(node2, commodity, year) =
-          SUM( (node,tec,vintage,mode,level,time,time2)$( (NOT sameas(node,node2)) AND map_tec_act(node2,tec,year,mode,time2)
-            AND map_tec_lifetime(node2,tec,vintage,year) AND map_commodity(node,commodity,level,year,time) ),
-* export from node2 to other market
-          output(node2,tec,vintage,year,mode,node,commodity,level,time2,time)
-        * duration_time_rel(time,time2) * ACT.L(node2,tec,vintage,year,mode,time2)
-        * COMMODITY_BALANCE.M(node,commodity,level,year,time) / discountfactor(year) )
-;
-
-* net commodity trade costs by node and year
-trade_cost(node2, year) = SUM(commodity, import_cost(node2, commodity, year) - export_cost(node2, commodity, year)) ;
-
-* total energy system costs excluidng taxes by node and time (CAVEAT: lacking regional corrections due to emission trading)
-total_cost(node_macro, year)$(NOT macro_base_period(year)) = (
-    COST_NODAL.L(node_macro, year) + trade_cost(node_macro, year)
-* subtract emission taxes applied at any higher nodal level (via map_node set)
-    - sum((type_emission,emission,type_tec,type_year,node)$( emission_scaling(type_emission,emission)
-            AND map_node(node,node_macro) AND cat_year(type_year,year) ),
-        emission_scaling(type_emission,emission) * tax_emission(node,type_emission,type_tec,type_year)
-        * EMISS.L(node_macro,emission,type_tec,year) )
-) / 1000 ;
-
 DISPLAY enestart, eneprice, total_cost ;
 
 *----------------------------------------------------------------------------------------------------------------------*
@@ -324,4 +290,3 @@ put_utility 'log' /"+++ End of MESSAGEix-MACRO run - have a nice day! +++ " ;
 *----------------------------------------------------------------------------------------------------------------------*
 * end of file - have a nice day!                                                                                       *
 *----------------------------------------------------------------------------------------------------------------------*
-

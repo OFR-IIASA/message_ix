@@ -1,13 +1,21 @@
 import collections
-import ixmp
+import copy
 import itertools
-import warnings
+import os
 
+import ixmp
+from ixmp.utils import pd_read, pd_write, isscalar, check_year, logger
 import pandas as pd
-import numpy as np
 
-from ixmp.utils import pd_read, pd_write
-from message_ix.utils import isscalar, logger
+from . import default_paths
+
+
+DEFAULT_SOLVE_OPTIONS = {
+    'advind': 0,
+    'lpmethod': 2,
+    'threads': 4,
+    'epopt': 1e-6,
+}
 
 
 def _init_scenario(s, commit=False):
@@ -44,8 +52,8 @@ class Scenario(ixmp.Scenario):
     """
 
     def __init__(self, mp, model, scenario=None, version=None, annotation=None,
-                 cache=False, clone=None, **kwargs):
-        """Initialize a new message_ix.Scenario (structured input data and solution)
+                 cache=False):
+        """Initialize a new message_ix.Scenario (input data and solution)
         or get an existing scenario from the ixmp database instance
 
         Parameters
@@ -62,32 +70,15 @@ class Scenario(ixmp.Scenario):
             a short annotation/comment (when initializing a new scenario)
         cache : boolean
             keep all dataframes in memory after first query (default: False)
-        clone : Scenario, optional
-            make a clone of an existing scenario
         """
-        if 'scen' in kwargs:
-            warnings.warn(
-                '`scen` is deprecated and will be removed in the next' +
-                ' release, please use `scenario`')
-            scenario = kwargs.pop('scen')
-
-        if version is not None and clone is not None:
-            raise ValueError(
-                'Can not provide both version and clone as arguments')
-        if clone is not None:
-            jscen = clone._jobj.clone(model, scenario, annotation,
-                                      clone._keep_sol, clone._first_model_year)
-        elif version == 'new':
-            scheme = 'MESSAGE'
-            jscen = mp._jobj.newScenario(model, scenario, scheme, annotation)
-        elif isinstance(version, int):
-            jscen = mp._jobj.getScenario(model, scenario, version)
-        else:
-            jscen = mp._jobj.getScenario(model, scenario)
-
+        # it not a new scenario, `ixmp.Scenario` uses scheme assigned in the db
+        scheme = 'MESSAGE' if version == 'new' else None
+        # `ixmp.Scenario` verifies that MESSAGE-scheme scenarios are
+        # initialized as `message_ix.Scenario` for correct API
         self.is_message_scheme = True
 
-        super(Scenario, self).__init__(mp, model, scenario, jscen, cache=cache)
+        super(Scenario, self).__init__(mp, model, scenario, version, scheme,
+                                       annotation, cache)
 
         if not self.has_solution():
             _init_scenario(self, commit=version != 'new')
@@ -131,12 +122,18 @@ class Scenario(ixmp.Scenario):
         """
         return ixmp.to_pylist(self._jobj.getCatEle(name, cat))
 
-    def has_solution(self):
-        """Returns True if scenario currently has a solution"""
-        try:
-            return not np.isnan(self.var('OBJ')['lvl'])
-        except Exception:
-            return False
+    def remove_solution(self):
+        """Remove the solution from the scenario
+
+        Delete the model solution (variables and equations) and timeseries
+        data marked as `meta=False` (see :meth:`TimeSeries.add_timeseries`)
+        prior to the first model year.
+        """
+        if self.has_solution():
+            self.clear_cache()  # reset Python data cache
+            self._jobj.removeSolution()
+        else:
+            raise ValueError('This Scenario does not have a solution!')
 
     def add_spatial_sets(self, data):
         """Add sets related to spatial dimensions of the model.
@@ -247,7 +244,7 @@ class Scenario(ixmp.Scenario):
             valid pair.
         """
         horizon = self.set('year')
-        first = self.cat('year', 'firstmodelyear')[0] or horizon[0]
+        first = self.firstmodelyear
 
         if ya_args:
             if len(ya_args) != 3:
@@ -257,12 +254,9 @@ class Scenario(ixmp.Scenario):
         else:
             combos = itertools.product(horizon, horizon)
 
-        # TODO: casting to int here is probably bad, but necessary for now
-        first = int(first)
         combos = [(int(y1), int(y2)) for y1, y2 in combos]
 
         def valid(y_v, y_a):
-            # TODO: casting to int here is probably bad
             ret = y_v <= y_a
             if in_horizon:
                 ret &= y_a >= first
@@ -272,54 +266,105 @@ class Scenario(ixmp.Scenario):
         v_years, a_years = zip(*year_pairs)
         return pd.DataFrame({'year_vtg': v_years, 'year_act': a_years})
 
-    def solve(self, model='MESSAGE', **kwargs):
-        """Solve the Scenario.
+    @property
+    def firstmodelyear(self):
+        """Returns the first model year of the scenario."""
+        return self._jobj.getFirstModelYear()
 
-        By default, :meth:`ixmp.Scenario.solve` is called with "MESSAGE" as the
+    def clone(self, model=None, scenario=None, annotation=None,
+              keep_solution=True, shift_first_model_year=None, platform=None):
+        """Clone the current scenario and return the clone.
+
+        If the (`model`, `scenario`) given already exist on the
+        :class:`Platform`, the `version` for the cloned Scenario follows the
+        last existing version. Otherwise, the `version` for the cloned Scenario
+        is 1.
+
+        .. note::
+            :meth:`clone` does not set or alter default versions. This means
+            that a clone to new (`model`, `scenario`) names has no default
+            version, and will not be returned by
+            :meth:`Platform.scenario_list` unless `default=False` is given.
+
+        Parameters
+        ----------
+        model : str, optional
+            New model name. If not given, use the existing model name.
+        scenario : str, optional
+            New scenario name. If not given, use the existing scenario name.
+        annotation : str, optional
+            Explanatory comment for the clone commit message to the database.
+        keep_solution : bool, default True
+            If :py:const:`True`, include all timeseries data and the solution
+            (vars and equs) from the source scenario in the clone.
+            Otherwise, only timeseries data marked as `meta=True` (see
+            :meth:`TimeSeries.add_timeseries`) or prior to `first_model_year`
+            (see :meth:`TimeSeries.add_timeseries`) are cloned.
+        shift_first_model_year: int, optional
+            If given, the values of the solution are transfered to parameters
+            `historical_*`, parameter `resource_volume` is updated, and the
+            `first_model_year` is shifted. The solution is then discarded,
+            see :meth:`TimeSeries.remove_solution`.
+        platform : :class:`Platform`, optional
+            Platform to clone to (default: current platform)
+        """
+        err = 'Cloning across platforms is only possible {}'
+        if platform is not None and not keep_solution:
+            raise ValueError(err.format('with `keep_solution=True`!'))
+
+        if platform is not None and shift_first_model_year is not None:
+            raise ValueError(err.format('without shifting model horizon!'))
+
+        if shift_first_model_year is not None:
+            keep_solution = False
+            msg = 'Shifting first model year to {} and removing solution'
+            logger().info(msg.format(shift_first_model_year))
+
+        platform = platform or self.platform
+        model = model or self.model
+        scenario = scenario or self.scenario
+        args = [platform._jobj, model, scenario, annotation, keep_solution]
+        if check_year(shift_first_model_year, 'shift_first_model_year'):
+            args.append(shift_first_model_year)
+
+        return Scenario(platform, model, scenario, cache=self._cache,
+                        version=self._jobj.clone(*args))
+
+    def solve(self, model='MESSAGE', solve_options={}, **kwargs):
+        """Solve the model for the Scenario.
+
+        By default, :meth:`ixmp.Scenario.solve` is called with 'MESSAGE' as the
         *model* argument; see the documentation of that method for other
         arguments. *model* may also be overwritten, e.g.:
 
         >>> s.solve(model='MESSAGE-MACRO')
 
-        """
-        return super(Scenario, self).solve(model=model, **kwargs)
-
-    def clone(self, model=None, scenario=None, annotation=None,
-              keep_solution=True, first_model_year=None, **kwargs):
-        """clone the current scenario and return the new scenario
-
         Parameters
         ----------
-        model : string
-            new model name
-        scenario : string
-            new scenario name
-        annotation : string
-            explanatory comment (optional)
-        keep_solution : boolean, default, True
-            indicator whether to include an existing solution
-            in the cloned scenario
-        first_model_year: int, default None
-            new first model year in cloned scenario
-            ('slicing', only available for MESSAGE-scheme scenarios)
-        """
-        if 'keep_sol' in kwargs:
-            warnings.warn(
-                '`keep_sol` is deprecated and will be removed in the next' +
-                ' release, please use `keep_solution`')
-            keep_solution = kwargs.pop('keep_sol')
-        if 'scen' in kwargs:
-            warnings.warn(
-                '`scen` is deprecated and will be removed in the next' +
-                ' release, please use `scenario`')
-            scenario = kwargs.pop('scen')
+        model : str, optional
+            Type of model to solve, e.g. 'MESSAGE' or 'MESSAGE-MACRO'.
+        solve_options : dict, optional
+            name, value pairs to use for GAMS solver optfile. See
+            :obj:`message_ix.DEFAULT_SOLVE_OPTIONS` for defaults
+            and https://www.gams.com/latest/docs/S_CPLEX.html for possible
+            keys.
 
-        self._keep_sol = keep_solution
-        self._first_model_year = first_model_year or 0
-        model = self.model if not model else model
-        scenario = self.scenario if not scenario else scenario
-        return Scenario(self.platform, model, scenario, annotation=annotation,
-                        cache=self._cache, clone=self)
+        """
+        # TODO: we generate the cplex.opt file on the fly. this is *not* safe
+        # against race conditions. It is possible to generate opt files with
+        # random names (see
+        # https://www.gams.com/latest/docs/UG_GamsCall.html#GAMSAOoptfile);
+        # however, we need to clean up the code in ixmp that passes arguments
+        # to gams to do so.
+        fname = os.path.join(default_paths.model_path(), 'cplex.opt')
+        opts = copy.deepcopy(DEFAULT_SOLVE_OPTIONS)
+        opts.update(solve_options)
+        lines = '\n'.join('{} = {}'.format(k, v) for k, v in opts.items())
+        with open(fname, 'w') as f:
+            f.writelines(lines)
+        ret = super(Scenario, self).solve(model=model, **kwargs)
+        os.remove(fname)
+        return ret
 
     def rename(self, name, mapping, keep=False):
         """Rename an element in a set

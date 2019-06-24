@@ -5,7 +5,7 @@ import os
 import re
 import shutil
 
-from setuptools import setup
+from setuptools import find_packages, setup
 from setuptools.command.install import install
 
 fname = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -28,40 +28,18 @@ INSTALL_REQUIRES = [
 
 EXTRAS_REQUIRE = {
     'tests': ['pytest>=3.0.6'],
-    'docs': ['cloud_sptheme', 'numpydoc', 'sphinx', 'sphinxcontrib-bibtex',
-             'sphinxcontrib-fulldoc'],
+    'docs': ['numpydoc', 'sphinx>=1.8', 'sphinx_rtd_theme',
+             'sphinxcontrib-bibtex'],
     'tutorial': ['jupyter', 'matplotlib'],
 }
 
 
-class Cmd(install):
-    """Custom clean command to tidy up the project root."""
-
-    def initialize_options(self):
-        install.initialize_options(self)
-
-    def finalize_options(self):
-        install.finalize_options(self)
-
-    def _clean_dirs(self):
-        dirs = [
-            'message_ix.egg-info',
-            'build',
-        ]
-        for d in dirs:
-            print('removing {}'.format(d))
-            shutil.rmtree(d)
-
-    def run(self):
-        install.run(self)
-        self._clean_dirs()
-
-
-def all_subdirs(path, strip=None):
+def all_gams_files(path, strip=None):
     paths = []
-    for root, dirnames, filenames in os.walk(path):
-        for dirname in dirnames:
-            paths.append(os.path.join(root, dirname, '*'))
+    for root, dirnames, files in os.walk(path):
+        for f in [_f for _f in files
+                  if os.path.splitext(_f)[1] in ['.gms', '.opt', '.md']]:
+            paths.append(os.path.join(root, f))
     if strip:
         n = len(strip) if strip.endswith(os.sep) else len(strip + os.sep)
         paths = [x[n:] for x in paths]
@@ -69,9 +47,6 @@ def all_subdirs(path, strip=None):
 
 
 def main():
-    packages = [
-        'message_ix'
-    ]
     pack_dir = {
         'message_ix': 'message_ix',
     }
@@ -82,14 +57,9 @@ def main():
         ],
     }
     cmdclass = {
-        'install': Cmd,
     }
     pack_data = {
-        # for some reason the model/ directory had to be added separately
-        # it worked locally but not on CI:
-        # https://circleci.com/gh/iiasa/message_ix/29
-        'message_ix': all_subdirs('message_ix/model', strip='message_ix') +
-        ['model/*gms', 'model/*opt'],
+        'message_ix': all_gams_files('message_ix/model', strip='message_ix')
     }
     setup_kwargs = {
         "name": "message_ix",
@@ -101,7 +71,7 @@ def main():
         "url": 'http://github.com/iiasa/message_ix',
         "install_requires": INSTALL_REQUIRES,
         "extras_require": EXTRAS_REQUIRE,
-        "packages": packages,
+        "packages": find_packages(),
         "package_dir": pack_dir,
         "package_data": pack_data,
         "entry_points": entry_points,
