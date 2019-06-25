@@ -12,7 +12,7 @@ from . import default_paths
 
 DEFAULT_SOLVE_OPTIONS = {
     'advind': 0,
-    'lpmethod': 2,
+    'lpmethod': 4,
     'threads': 4,
     'epopt': 1e-6,
 }
