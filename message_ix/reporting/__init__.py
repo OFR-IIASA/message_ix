@@ -51,34 +51,31 @@ configure(
         'year_act': 'ya',
         'year_vtg': 'yv',
         'year_rel': 'yr',
-    })
+    }
+)
 
 #: Basic derived quantities that are the product of two others.
 PRODUCTS = (
     ('out',
         ('output', 'ACT')),
-    ('out_hist',
-        ('output', 'ref_activity')),
     ('in',
         ('input', 'ACT')),
-    ('in_hist',
-        ('input', 'ref_activity')),
+    ('rel',
+        ('relation_activity', 'ACT')),
     ('emi',
         ('emission_factor', 'ACT')),
-    ('emi_hist',
-        ('emission_factor', 'ref_activity')),
     ('inv',
         ('inv_cost', 'CAP_NEW')),
-    ('inv_hist',
-        ('inv_cost', 'ref_new_capacity')),
     ('fom',
         ('fix_cost', 'CAP')),
-    ('fom_hist',
-        ('fix_cost', 'ref_capacity')),
     ('vom',
         ('var_cost', 'ACT')),
-    ('vom_hist',
-        ('var_cost', 'ref_activity')),
+    ('land_out',
+        ('land_output', 'LAND')),
+    ('land_use_qty',  # TODO: better name!
+        ('land_use', 'LAND')),
+    ('land_emi',
+        ('land_emission', 'LAND')),
 )
 
 #: Other standard derived quantities.
@@ -120,36 +117,52 @@ class Reporter(IXMPReporter):
         message_ix.reporting.Reporter
             A reporter for *scenario*.
         """
+        if not scenario.has_solution():
+            raise RuntimeError('Scenario must have a solution to be reported')
+
         # Invoke the ixmp method
         rep = super().from_scenario(scenario, **kwargs)
 
         # Add basic quantities for MESSAGEix models
         for name, quantities in PRODUCTS:
-            new_key = rep.add_product(name, quantities)
-
-            # Give some log output
-            if new_key is None:
-                missing = [q for q in quantities if q not in rep._index]
-                log.info('{} not in scenario → not adding {}'
-                         .format(missing, name))
+            try:
+                rep.add_product(name, *quantities)
+            except KeyError as e:
+                log.info(f'{e.args[0]} not in scenario → not adding {name}')
 
         # Add derived quantities for MESSAGEix models
         for key, args in DERIVED:
-            rep.add(key, args)
+            try:
+                rep.add(key, args, strict=True)
+            except KeyError as e:
+                log.info(f'{e.args[0]} not in scenario → not adding {key}')
 
         # Add conversions to pyam
         for key, args in PYAM_CONVERT.items():
             qty, year_dim, collapse_kw = args
-            rep.as_pyam(qty, year_dim, key=key + ':pyam',
-                        collapse=partial(collapse_message_cols, **collapse_kw))
+            collapse_cb = partial(collapse_message_cols, **collapse_kw)
+            key += ':pyam'
+            try:
+                rep.as_pyam(qty, year_dim, key, collapse=collapse_cb)
+            except KeyError as e:
+                log.info(f'{e.args[0]} not in scenario → not adding {key}')
 
         # Add standard reports
         for group, pyam_keys in REPORTS.items():
-            rep.add(group, tuple([computations.concat] + pyam_keys))
+            # Filter out keys which are not added, above
+            keys = list(filter(lambda k: k in rep, pyam_keys))
+
+            # Log diagnostic information
+            missing = sorted(set(pyam_keys) - set(keys))
+            if missing:
+                log.info(f'missing {missing} omitted from {group}')
+
+            rep.add(group, tuple([computations.concat] + keys), strict=True)
 
         # Add all standard reporting to the default message node
         rep.add('message:default',
-                tuple([computations.concat] + list(REPORTS.keys())))
+                tuple([computations.concat] + list(REPORTS.keys())),
+                strict=True)
 
         return rep
 
@@ -179,9 +192,10 @@ class Reporter(IXMPReporter):
             Keys for the reporting targets that create the IamDataFrames
             corresponding to *quantities*. The keys have the added tag ‘iamc’.
         """
-        # TODO, this should check for any viable container
-        if not isinstance(quantities, list):
+        if isinstance(quantities, (str, Key)):
             quantities = [quantities]
+        quantities = self.check_keys(*quantities)
+
         keys = []
         for qty in quantities:
             # Dimensions to drop automatically
