@@ -1,8 +1,9 @@
-from ixmp.reporting.computations import (  # noqa: F401
-    product,
-    write_report as ixmp_write_report
-)
-import pyam
+# Import other comps so they can be imported from this module
+from ixmp.reporting.computations import *        # noqa: F401, F403
+from ixmp.reporting.computations import product
+from ixmp.reporting.utils import RENAME_DIMS, as_quantity
+
+from .pyam import as_pyam, concat, write_report  # noqa: F401
 
 
 def add(a, b, fill_value=0.0):
@@ -10,26 +11,47 @@ def add(a, b, fill_value=0.0):
     return a.add(b, fill_value=fill_value).dropna()
 
 
-def concat(*args):
-    """Concatenate *args*, which must be :class:`pyam.IamDataFrame`."""
-    return pyam.concat(args)
+def map_as_qty(set_df):
+    """Convert *set_df* to a Quantity.
 
+    For the MESSAGE sets named ``cat_*`` (see
+    :ref:`mapping-sets`) :meth:`ixmp.Scenario.set` returns a
+    :class:`~pandas.DataFrame` with two columns: the *category* set (S1)
+    elements and the *category member* set (S2) elements.
 
-def write_report(quantity, path):
-    """Write the report identified by *key* to the file at *path*.
+    This computation converts the DataFrame *set_df* into a quantity with two
+    dimensions. At the coordinates *(s₁, s₂)*, the value is 1 if *s₂* is a
+    mapped from *s₁*; otherwise 0.
 
-    If *quantity* is a :class:`pyam.IamDataFrame` and *path* ends with '.csv'
-    or '.xlsx', use :mod:`pyam` methods to write the file to CSV or Excel
-    format, respectively. Otherwise, equivalent to
-    :meth:`ixmp.reporting.computations.write_report`.
+    See also
+    --------
+    broadcast_map
     """
-    if not isinstance(quantity, pyam.IamDataFrame):
-        return ixmp_write_report(quantity, path)
+    set_from, set_to = set_df.columns
+    names = [RENAME_DIMS.get(c, c) for c in set_df.columns]
 
-    if path.suffix == '.csv':
-        quantity.to_csv(path)
-    elif path.suffix == '.xlsx':
-        quantity.to_excel(path, merge_cells=False)
-    else:
-        raise ValueError('pyam.IamDataFrame can be written to .csv or .xlsx, '
-                         'not {}'.format(path.suffix))
+    # Add a value column
+    set_df['value'] = 1
+
+    return set_df.set_index([set_from, set_to])['value'] \
+                 .rename_axis(index=names) \
+                 .pipe(as_quantity)
+
+
+def broadcast_map(quantity, map, rename={}):
+    """Broadcast *quantity* using a *map*.
+
+    The *map* must be a 2-dimensional quantity, such as returned by
+    :meth:`map_as_qty`.
+
+    *quantity* is 'broadcast' by multiplying it with the 2-dimensional *map*,
+    and then dropping the common dimension. The result has the second dimension
+    of *map* instead of the first.
+
+    Parameters
+    ----------
+    rename : dict (str -> str), optional
+        Dimensions to rename on the result.
+    """
+    return product(quantity, map).drop(map.dims[0]) \
+                                 .rename(rename)

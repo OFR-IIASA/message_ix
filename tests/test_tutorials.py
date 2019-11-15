@@ -26,16 +26,20 @@ AT = 'Austrian_energy_system'
 #    b. Expected objective value.
 tutorials = [
     (('westeros', 'westeros_baseline'),
-     [('solve-objective-value', 207544.09375)]),
+     [('solve-objective-value', 238193.291167)]),
+
     # on Python 2:
     # 'solve-objective-value', 187445.953125),
     (('westeros', 'westeros_emissions_bounds'), []),
     (('westeros', 'westeros_emissions_taxes'), []),
     (('westeros', 'westeros_firm_capacity'), []),
     (('westeros', 'westeros_flexible_generation'), []),
+    (('westeros', 'westeros_report'),
+     # NB this is the same value as in test_reporter()
+     [('len-rep-graph', 16569)]),
     # FIXME use get_cell_by_name instead of assuming cell count/order is fixed
-    ((AT, 'austria'), [(-13, 133105106944.0)]),
-    ((AT, 'austria_single_policy'), [(-8, 132452155392.0)]),
+    ((AT, 'austria'), [(-13, 133105.109375)]),
+    ((AT, 'austria_single_policy'), [(-8, 525474464.0)]),
     ((AT, 'austria_multiple_policies'), []),
     ((AT, 'austria_multiple_policies-answers'), []),
     ((AT, 'austria_load_scenario'), []),
