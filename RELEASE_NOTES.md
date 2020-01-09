@@ -3,6 +3,10 @@
 
 ## Migrating
 
+**Support for Python 2.7 is dropped** as it has reached end-of-life, meaning no further releases will be made even to fix bugs.
+See [PEP-0373](https://legacy.python.org/dev/peps/pep-0373/) and https://python3statement.org.
+``message_ix`` users must upgrade to Python 3.
+
 **Command-line interface (CLI).** Use `message-ix` as the program for all command-line operations:
 - `message-ix copy-model` replaces `messageix-config`.
 - `message-ix dl` replaces `messageix-dl`.
@@ -10,6 +14,9 @@
 
 ## All changes
 
+- [#285](https://github.com/iiasa/message_ix/pull/285): Drop support for Python 2.
+- [#284](https://github.com/iiasa/message_ix/pull/284): Add a suggested sequence/structure to how to run the Westeros tutorials.
+- [#281](https://github.com/iiasa/message_ix/pull/281): Test and improve logic of `years_active` and `vintage_and_active_years`.
 - [#269](https://github.com/iiasa/message_ix/pull/269): Enforce 'year'-indexed columns as integers.
 - [#256](https://github.com/iiasa/message_ix/pull/256): Update to use :obj:`ixmp.config` and improve CLI.
 - [#255](https://github.com/iiasa/message_ix/pull/249): Add :mod:`message_ix.testing.nightly` and `nightly` CLI command group for slow-running tests.
@@ -20,7 +27,7 @@
   [#242](https://github.com/iiasa/message_ix/pull/242),
   [#263](https://github.com/iiasa/message_ix/pull/263): Enhance reporting.
 - [#232](https://github.com/iiasa/message_ix/pull/232): Add Westeros tutorial for modelling seasonality, update existing tutorials.
-
+- [#276](https://github.com/iiasa/message_ix/pull/276): Improving add_year for bounds and code cleanup
 # v1.2.0
 
 MESSAGEix 1.2.0 adds an option to set the commodity balance to strict equality,
