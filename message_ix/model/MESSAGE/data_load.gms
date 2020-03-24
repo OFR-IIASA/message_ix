@@ -120,7 +120,7 @@ map_tec_lifetime(node,tec,vintage,year_all)$( map_tec(node,tec,vintage) AND map_
 map_tec_lifetime(node,tec,historical,year_all)$( map_tec(node,tec,year_all) AND map_period(historical,year_all)
     AND historical_new_capacity(node,tec,historical)
     AND duration_period_sum(historical,year_all)
-        < sum(first_period, technical_lifetime(node,tec,first_period) ) ) = yes ;
+        < technical_lifetime(node,tec,historical) ) = yes ;
 
 * mapping of renewable technologies to their input commodities
 map_ren_com(node,renewable_tec,commodity,year_all)$(
