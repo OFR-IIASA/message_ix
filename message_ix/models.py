@@ -16,6 +16,12 @@ DEFAULT_CPLEX_OPTIONS = {
     'threads': 4,
     'epopt': 1e-6,
 }
+#DEFAULT_CPLEX_OPTIONS = {
+#    'advind': 1,
+#    'lpmethod': 2,
+#    'threads': 4,
+#    'epopt': 1e-6,
+#}
 
 
 def _template(*parts):
