@@ -1,5 +1,3 @@
-import os
-
 import ixmp
 import numpy as np
 import numpy.testing as npt
@@ -317,6 +315,12 @@ def test_excel_read_write(message_test_mp, tmp_path):
     scen1.init_par('new_par', idx_sets=['new_set'])
     scen1.add_par('new_par', 'member', 2, '-')
     scen1.commit('new set and parameter added.')
+
+    # Writing to Excel without solving
+    scen1.to_excel(fname)
+
+    # Writing to Excel when scenario has a solution
+    scen1.solve()
     scen1.to_excel(fname)
 
     scen2 = Scenario(message_test_mp, model='foo', scenario='bar',
@@ -338,9 +342,7 @@ def test_excel_read_write(message_test_mp, tmp_path):
 
     scen2.commit('foo')  # must be checked in
     scen2.solve()
-    assert np.isclose(scen2.var('OBJ')['lvl'], 153.675)
-
-    os.remove(fname)
+    assert np.isclose(scen2.var('OBJ')['lvl'], scen1.var('OBJ')['lvl'])
 
 
 def test_clone(tmpdir):

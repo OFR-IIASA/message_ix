@@ -4,7 +4,7 @@ from functools import partial
 from logging import WARNING
 from pathlib import Path
 
-from ixmp.reporting import Reporter as ixmp_Reporter
+from ixmp.reporting import Reporter as ixmp_Reporter, as_quantity
 from ixmp.testing import assert_qty_equal
 from numpy.testing import assert_allclose
 import pandas as pd
@@ -48,7 +48,7 @@ def test_reporter(message_test_mp):
 
     # Quantities contain expected data
     dims = dict(coords=['chicago new-york topeka'.split()], dims=['n'])
-    demand = xr.DataArray([300, 325, 275], **dims)
+    demand = as_quantity(xr.DataArray([300, 325, 275], **dims), name='demand')
 
     # NB the call to squeeze() drops the length-1 dimensions c-l-y-h
     obs = rep.get('demand:n-c-l-y-h').squeeze(drop=True)
@@ -63,7 +63,7 @@ def test_reporter(message_test_mp):
 
     # message_ix.Reporter pre-populated with additional, derived quantities
     # This is the same value as in test_tutorials.py
-    assert len(rep.graph) == 12537
+    assert len(rep.graph) == 12553
 
     # Derived quantities have expected dimensions
     vom_key = rep.full_key('vom')
@@ -131,6 +131,20 @@ def dantzig_reporter(message_test_mp):
     if not scen.has_solution():
         scen.solve()
     yield Reporter.from_scenario(scen)
+
+
+def test_as_pyam(message_test_mp):
+    scen = Scenario(message_test_mp, **SCENARIO['dantzig'])
+    if not scen.has_solution():
+        scen.solve()
+    rep = Reporter.from_scenario(scen)
+
+    # Quantities for 'ACT' variable at full resolution
+    qty = rep.get(rep.full_key('ACT'))
+
+    # Call as_pyam() with an empty quantity
+    p = computations.as_pyam(scen, qty[0:0], year_time_dim='ya')
+    assert isinstance(p, pyam.IamDataFrame)
 
 
 def test_reporter_convert_pyam(dantzig_reporter, caplog, tmp_path):

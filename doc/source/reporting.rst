@@ -128,6 +128,7 @@ These include:
 - ``addon in``     = ``input`` × ``addon ACT``,
 - ``addon out``    = ``output`` × ``addon ACT``, and
 - ``addon potential`` = ``addon up`` × ``addon ACT``, the maximum potential activity by add-on technology.
+- ``price emission``, the model variable ``PRICE_EMISSION`` broadcast across emission species (``e``) *and* technologies (``t``) rather than types (``type_emission``, ``type_tec``).
 
 .. tip:: Use :meth:`~.full_key` to retrieve the full-dimensionality
    :class:`Key` for any of these quantities.
@@ -161,7 +162,7 @@ These automatic features of :class:`~message_ix.reporting.Reporter` are controll
 .. autoclass:: Reporter
    :show-inheritance:
    :members: write
-   :exclude-members: as_pyam
+   :exclude-members: add_as_pyam
 
    .. automethod:: convert_pyam
 
