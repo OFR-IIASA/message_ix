@@ -34,6 +34,7 @@ sys.path.append('.')
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
@@ -304,9 +305,17 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
+# -- Options for sphinx.ext.extlinks ------------------------------------------
+
+extlinks = {
+    'pull': ("https://github.com/iiasa/message_ix/pull/%s", 'PR #'),
+}
+
+
+# -- Options for sphinx.ext.intersphinx ---------------------------------------
 
 intersphinx_mapping = {
-    'dask': ('http://docs.dask.org/en/stable/', None),
+    'dask': ('https://docs.dask.org/en/stable/', None),
     'ixmp': ('https://message.iiasa.ac.at/projects/ixmp/en/latest/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'pint': ('https://pint.readthedocs.io/en/stable/', None),
@@ -316,7 +325,7 @@ intersphinx_mapping = {
 
 
 # prolog for all rst files
-rst_prolog = """
+rst_prolog = r"""
 .. |MESSAGEix| replace:: MESSAGE\ :emphasis:`ix`
 
 .. |ixmp| replace:: :emphasis:`ix modeling platform`
