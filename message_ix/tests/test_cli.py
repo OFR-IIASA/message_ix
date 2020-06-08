@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 import pytest
 
@@ -29,17 +30,27 @@ def test_copy_model(message_ix_cli, tmp_path, tmp_env):
 
 
 @pytest.mark.parametrize('opts', [
-    # During release prep, 'dl' will try to download e.g. v2.0.0, which does
-    # not yet exist; so the test fails. Use this line:
-    # pytest.param('', marks=pytest.mark.xfail),
-    # Otherwise (normal state on master), use this line:
     '',
     '--branch=master',
-    '--tag=1.2.0',
+    '--tag=v1.2.0',
+    # Nonexistent tag
+    pytest.param('--tag=v999', marks=pytest.mark.xfail(raises=AssertionError)),
 ])
 def test_dl(message_ix_cli, opts, tmp_path):
     r = message_ix_cli('dl', opts, str(tmp_path))
+
     if r.exit_code != 0:
         # Debugging information
         print(r.exception, r.output)
-    assert r.exit_code == 0
+        assert False
+    print(r.exception, r.output)
+
+    if opts == "":
+        # Guess what the latest release will be from GitHub, using __version__.
+        # This string is provided by setuptools-scm based on the most recent
+        # Git tag, e.g. if the tag is 'v3.0.0' it may be '3.0.1.devN+etc'.
+        major = message_ix.__version__.split('.')[0]
+
+        # 'message-ix dl' defaults to the latest release
+        pattern = re.compile(fr"Default: latest release v{major}\.\d+\.\d+")
+        assert pattern.match(r.output)
