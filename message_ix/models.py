@@ -18,12 +18,6 @@ DEFAULT_CPLEX_OPTIONS = {
     'barcrossalg': 2,
     'numericalemphasis': 1,
 }
-#DEFAULT_CPLEX_OPTIONS = {
-#    'advind': 1,
-#    'lpmethod': 2,
-#    'threads': 4,
-#    'epopt': 1e-6,
-#}
 
 # Common indices for some parameters in MESSAGE_ITEMS
 _idx_common = ['node', 'technology', 'level', 'commodity', 'year', 'time']
@@ -123,17 +117,16 @@ class GAMSModel(ixmp.model.gams.GAMSModel):
         lines = ('{} = {}'.format(*kv) for kv in self.cplex_opts.items())
         optfile.write_text('\n'.join(lines))
 
-        result = super().run(scenario)
-#        try:
-#            result = super().run(scenario)
-#        finally:
-#            # Remove the optfile regardless of whether the run completed
-#            # without error. The file may have been removed already by another
-#            # run (in a separate process) that completed before this one.
-#            # py37 compat: check for existence instead of using
-#            # unlink(missing_ok=True)
-#            if optfile.exists():
-#                optfile.unlink()
+        try:
+            result = super().run(scenario)
+        finally:
+            # Remove the optfile regardless of whether the run completed
+            # without error. The file may have been removed already by another
+            # run (in a separate process) that completed before this one.
+            # py37 compat: check for existence instead of using
+            # unlink(missing_ok=True)
+            if optfile.exists():
+                optfile.unlink()
 
         return result
 
