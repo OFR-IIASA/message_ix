@@ -15,7 +15,7 @@ DEFAULT_CPLEX_OPTIONS = {
     'lpmethod': 4,
     'threads': 4,
     'epopt': 1e-6,
-    'barcrossalg': 2,
+#    'barcrossalg': 2,
     'numericalemphasis': 1,
 }
 
