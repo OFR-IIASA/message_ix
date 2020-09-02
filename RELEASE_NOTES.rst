@@ -4,8 +4,21 @@ Next release
 All changes
 -----------
 
-- :pull:`377`: Improve the :doc:`rmessageix <rmessageix>` R package, tutorials, and expand documentation and installation instructions.
 
+v3.1.0 (2020-08-28)
+===================
+
+:mod:`message_ix` v3.1.0 coincides with :mod:`ixmp` v3.1.0.
+
+All changes
+-----------
+
+- :pull:`366`: Add new Westeros tutorial on modeling fossil resource supply curves.
+- :pull:`391`, :pull:`392`: Add a documentation page on :doc:`pre-requisite knowledge & skills <prereqs>`; expand guidelines on :doc:`contributing`.
+- :pull:`389`: Fix a bug in :func:`.pyam.concat` using *non*-pyam objects.
+- :pull:`286`, :pull:`381`, :pull:`389`: Improve :meth:`.add_horizon` to also set ``duration_period``; add documentation of :doc:`time`.
+- :pull:`377`: Improve the :doc:`rmessageix <rmessageix>` R package, tutorials, and expand documentation and installation instructions.
+- :pull:`382`: Update discount factor from ``df_year`` to ``df_period`` in documentation of the objective function to match the GAMS formulation.
 
 v3.0.0 (2020-06-07)
 ===================
