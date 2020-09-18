@@ -12,7 +12,7 @@ from .macro import MACRO_ITEMS
 #: Solver options used by :meth:`message_ix.Scenario.solve`.
 DEFAULT_CPLEX_OPTIONS = {
     'advind': 0,
-    'lpmethod': 2,
+    'lpmethod': 4,
     'threads': 4,
     'epopt': 1e-6,
 }
