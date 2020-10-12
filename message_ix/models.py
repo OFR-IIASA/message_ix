@@ -125,8 +125,9 @@ class GAMSModel(ixmp.model.gams.GAMSModel):
             # run (in a separate process) that completed before this one.
             # py37 compat: check for existence instead of using
             # unlink(missing_ok=True)
-            if optfile.exists():
-                optfile.unlink()
+            test = 1
+            #if optfile.exists():
+            #    optfile.unlink()
 
         return result
 
