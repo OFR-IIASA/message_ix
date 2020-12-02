@@ -4,11 +4,15 @@ Next release
 All changes
 -----------
 
+- :pull:`421`: Fix discounting from forward-looking to backward-looking and provide an explanation of the period structure and discounting in documentation of :doc:`time`.
+
 
 v3.1.0 (2020-08-28)
 ===================
 
 :mod:`message_ix` v3.1.0 coincides with :mod:`ixmp` v3.1.0.
+
+For citing :mod:`message_ix`, distinct digital object identifiers (DOIs) are available for every release from v3.1.0 onwards; see the :ref:`user guidelines and notice <notice-cite>` for more information and how to cite.
 
 All changes
 -----------
