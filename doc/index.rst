@@ -7,13 +7,13 @@ The |MESSAGEix| framework
 
    The |ixmp| (:cite:`huppmann_messageix_2018`)
 
-|MESSAGEix| is a versatile, dynamic systems-optimization modelling framework developed by the |IIASA| Energy Program since the 1980s.
+|MESSAGEix| is a versatile, dynamic systems-optimization modelling framework developed by the |IIASA| Energy, Climate, and Environment (ECE) Program [#rename]_ since the 1980s.
 
 This is the documentation for :mod:`message_ix`, a Python package that ties together all components of the framework.
 :mod:`message_ix` and :mod:`ixmp` are free and open source, licensed under the `APACHE 2.0 open-source license`_.
 
 - For the scientific reference of the framework, see Huppmann et al. (2019) :cite:`huppmann_messageix_2018`.
-- For an overview and recent publications related to the specific |MESSAGEix|-GLOBIOM global model instance used at the IIASA Energy Program, see the `MESSAGEix-GLOBIOM documentation`_.
+- For an overview and recent publications related to the specific |MESSAGEix|-GLOBIOM global model instance used at the IIASA ECE Program, see the `MESSAGEix-GLOBIOM documentation`_.
 
 
 .. _getting-started:
@@ -134,12 +134,17 @@ Everyone is encouraged to use the framework to develop energy system and integra
 
 .. _help:
 
-Have a question?
+Have a question? Check…
 
-- Check the :doc:`faq`.
-- Search current and older `issues on GitHub <https://github.com/iiasa/message_ix/issues?q=is:issue>`_, or open a new one with your question.
-- Consult the community Google group on the web at https://groups.google.com/d/forum/message_ix, or via e-mail at <message_ix@googlegroups.com>.
+- …on GitHub:
 
+  - Join an existing `discussion <https://github.com/iiasa/message_ix/discussions>`_ or start a new one with your question.
+  - Search `current issues <https://github.com/iiasa/message_ix/issues?q=is:issue>`_, or open a new one to report a bug in the code.
+
+- …the :doc:`faq`.
+- …the message_ix Google Group, either `online <https://groups.google.com/d/forum/message_ix>`_ or via e-mail at <message_ix@googlegroups.com>.
 
 .. _`MESSAGEix-GLOBIOM documentation`: http://data.ene.iiasa.ac.at/message-globiom/
 .. _`APACHE 2.0 open-source license`: https://github.com/iiasa/message_ix/blob/master/LICENSE
+
+.. [#rename] Known as the “Energy Program” until 2020-12-31.

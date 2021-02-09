@@ -4,6 +4,30 @@ Next release
 All changes
 -----------
 
+
+
+v3.2.0 (2021-01-24)
+===================
+
+Migration notes
+---------------
+
+- Code that uses :func:`.make_df` can be adjusted in one of two ways.
+  See the function documentation for details.
+  The function should be imported from the top level:
+
+  .. code-block:: python
+
+     from message_ix import make_df
+
+
+All changes
+-----------
+
+- :pull:`407`: Use :mod:`.reporting` in tutorials; add :mod:`.util.tutorial` for shorthand code used to streamline tutorials.
+- :pull:`407`: Make :class:`.Reporter` a top-level class.
+- :pull:`415`: Improve :func:`.make_df` to generate empty, partially-, or fully-filled data frames with the correct columns for any MESSAGE or MACRO parameter.
+- :pull:`415`: Make complete lists of :data:`.MESSAGE_ITEMS`, :data:`.MACRO_ITEMS` and their dimensions accessible through the Python API.
 - :pull:`421`: Fix discounting from forward-looking to backward-looking and provide an explanation of the period structure and discounting in documentation of :doc:`time`.
 
 
@@ -17,6 +41,7 @@ For citing :mod:`message_ix`, distinct digital object identifiers (DOIs) are ava
 All changes
 -----------
 
+- :pull:`367`: Add new westeros tutorial on share constraints.
 - :pull:`366`: Add new Westeros tutorial on modeling fossil resource supply curves.
 - :pull:`391`, :pull:`392`: Add a documentation page on :doc:`pre-requisite knowledge & skills <prereqs>`; expand guidelines on :doc:`contributing`.
 - :pull:`389`: Fix a bug in :func:`.pyam.concat` using *non*-pyam objects.

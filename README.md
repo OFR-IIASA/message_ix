@@ -8,7 +8,7 @@
 [![Test coverage](https://codecov.io/gh/iiasa/message_ix/branch/master/graph/badge.svg)](https://codecov.io/gh/iiasa/message_ix)
 
 
-MESSAGEix is a versatile, dynamic systems-optimization modeling framework developed by the IIASA Energy Program since the 1980s.
+MESSAGEix is a versatile, dynamic systems-optimization modeling framework developed by the IIASA Energy, Climate, and Environment (ECE) Program since the 1980s.
 
 MESSAGE is a specific mathematical formulation of a model for strategic energy planning and integrated assessment of energy-engineering-economy-environment (E4) systems.
 The linear-programming optimization model can be be linked to the general-equilibrium MACRO model to incorporate feedback between prices and demand levels for energy and commodities.
@@ -19,7 +19,7 @@ The framework is built on IIASA's [*ix* modeling platform (ixmp)](https://github
 
 ## License
 
-Copyright © 2018–2020 IIASA Energy Program
+Copyright © 2018–2021 IIASA Energy, Climate, and Environment (ECE) Program
 
 The MESSAGEix framework is licensed under the Apache License, Version 2.0 (the
 "License"); you may not use the files in this repository except in compliance
@@ -40,7 +40,7 @@ including the complete mathematical formulation and associated files, is
 automatically created from mark-up comments in the GAMS, Python, and R code.
 
 - Documentation for the ‘latest’ or ‘stable’ release is shown by default.
-- Use the chooser to reach the [docs for the ``master`` branch](https://docs.messageix.org/en/master) of the GitHub repository, including the latest development code.
+- Use the chooser to access the [docs for the ‘master’ branch](https://docs.messageix.org/en/master) of the GitHub repository, including the latest development code; or, to access docs for a specific version of message_ix, e.g. `v3.2.0`.
 - For offline use, the documentation can be built from the source code.
   See the file `doc/README.rst`.
 
