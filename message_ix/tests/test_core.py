@@ -336,8 +336,8 @@ def test_years_active(test_mp):
     result = scen.years_active("foo", "bar", years[1])
 
     # Correct return type
-    assert isinstance(years, list)
-    assert isinstance(years[0], int)
+    assert isinstance(result, list)
+    assert isinstance(result[0], int)
 
     # Years 1995 through 2020
     npt.assert_array_equal(result, years[1:-1])
@@ -366,6 +366,51 @@ def test_years_active_extend(message_test_mp):
     # - is NOT active within the period '1995' (1994-01-01 to 1995-12-31)
     result = scen.years_active("seattle", "canning_plant", 1964)
     npt.assert_array_equal(result, years[1:-1])
+
+
+def test_years_active_extended2(test_mp):
+    test_mp.add_unit("year")
+    scen = Scenario(test_mp, **SCENARIO["dantzig"], version="new")
+    scen.add_set("node", "foo")
+    scen.add_set("technology", "bar")
+
+    # Periods of uneven length
+    years = [1990, 1995, 2000, 2005, 2010, 2020, 2030]
+
+    # First period length is immaterial
+    duration = [1900, 5, 5, 5, 5, 10, 10]
+    scen.add_horizon(year=years, firstmodelyear=years[-1])
+    scen.add_par(
+        "duration_period", pd.DataFrame(zip(years, duration), columns=["year", "value"])
+    )
+
+    # 'bar' built in period '2020' with 10-year lifetime:
+    # - is constructed in 2011-01-01.
+    # - by 2020-12-31, has operated 10 years.
+    # - operates until 2020-12-31. This is within the period '2020'.
+    # The test ensures that the correct lifetime value is retrieved,
+    # i.e. the lifetime for the vintage 2020.
+    scen.add_par(
+        "technical_lifetime",
+        pd.DataFrame(
+            dict(
+                node_loc="foo",
+                technology="bar",
+                unit="year",
+                value=[20, 20, 20, 20, 20, 10, 10],
+                year_vtg=years,
+            ),
+        ),
+    )
+
+    result = scen.years_active("foo", "bar", years[-2])
+
+    # Correct return type
+    assert isinstance(result, list)
+    assert isinstance(result[0], int)
+
+    # Years 2020
+    npt.assert_array_equal(result, years[-2])
 
 
 def test_new_timeseries_long_name64(message_test_mp):
@@ -427,7 +472,7 @@ def test_rename_technology(dantzig_message_scenario):
     clone.rename("technology", {"canning_plant": "foo_bar"})
     assert not clone.par("output")["technology"].isin(["canning_plant"]).any()
     assert clone.par("output")["technology"].isin(["foo_bar"]).any()
-    clone.solve()
+    clone.solve(quiet=True)
     assert np.isclose(clone.var("OBJ")["lvl"], 153.675)
 
 
@@ -463,7 +508,7 @@ def test_excel_read_write(message_test_mp, tmp_path):
     scen1.to_excel(fname)
 
     # Writing to Excel when scenario has a solution
-    scen1.solve()
+    scen1.solve(quiet=True)
     scen1.to_excel(fname)
 
     scen2 = Scenario(message_test_mp, model="foo", scenario="bar", version="new")
@@ -482,7 +527,7 @@ def test_excel_read_write(message_test_mp, tmp_path):
     assert scen2.has_par("new_par")
     assert float(scen2.par("new_par")["value"]) == 2
 
-    scen2.solve()
+    scen2.solve(quiet=True)
     assert np.isclose(scen2.var("OBJ")["lvl"], scen1.var("OBJ")["lvl"])
 
 

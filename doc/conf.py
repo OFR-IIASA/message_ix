@@ -95,10 +95,16 @@ html_static_path = ["_static"]
 latex_engine = "lualatex"
 
 
-# -- Options for sphinx.ext.extlinks ------------------------------------------
+# -- Options for sphinx.ext.extlinks ---------------------------------------------------
+
+# Link to "main" blob if a non-release version of the docs is being built; otherwise
+# to the tag for the release
+gh_ref = "main" if ".dev" in version else f"v{version}"
 
 extlinks = {
+    "issue": ("https://github.com/iiasa/message_ix/issue/%s", "#"),
     "pull": ("https://github.com/iiasa/message_ix/pull/%s", "PR #"),
+    "tut": (f"https://github.com/iiasa/message_ix/blob/{gh_ref}/tutorial/%s", ""),
 }
 
 
@@ -117,6 +123,25 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
 }
 
+# -- Options for sphinx.ext.mathjax ----------------------------------------------------
+
+# TODO read at least some of these from message_ix.models
+# TODO complete list
+# TODO also add these to a LaTeX preamble
+text_macros = """ACT
+STORAGE
+STORAGE_CHARGE
+duration_time_rel
+input
+map_time_commodity_storage
+storage_initial
+storage_self_discharge"""
+
+mathjax3_config = dict(
+    tex=dict(
+        macros={k.replace("_", ""): r"\text{" + k + "}" for k in text_macros.split()},
+    ),
+)
 
 # -- Options for sphinx.ext.todo ----------------------------------------------
 

@@ -1,4 +1,5 @@
 import sys
+from shutil import copyfile
 
 import numpy as np
 import pytest
@@ -23,12 +24,15 @@ tutorials = [
         [("solve-objective-value", 369297.75)],
         {},
     ),
+    (("westeros", "westeros_baseline_using_xlsx_import_part1"), [], {}),
+    (("westeros", "westeros_baseline_using_xlsx_import_part2"), [], {}),
     (("westeros", "westeros_emissions_bounds"), [], {}),
     (("westeros", "westeros_emissions_taxes"), [], {}),
     (("westeros", "westeros_firm_capacity"), [], {}),
     (("westeros", "westeros_flexible_generation"), [], {}),
     (("westeros", "westeros_fossil_resource"), [], {}),
     (("westeros", "westeros_share_constraint"), [], {}),
+    (("westeros", "westeros_addon_technologies"), [], {}),
     # NB this is the same value as in test_reporter()
     (("westeros", "westeros_report"), [("len-rep-graph", 12688)], {}),
     ((AT, "austria"), [("solve-objective-value", 206321.90625)], {}),
@@ -41,12 +45,38 @@ tutorials = [
     ((AT, "austria_multiple_policies-answers"), [], {}),
     ((AT, "austria_load_scenario"), [], {}),
     # R tutorials / IR kernel
-    ((AT, "R_austria"), [], dict(kernel="IR")),
-    ((AT, "R_austria_load_scenario"), [], dict(kernel="IR")),
+    pytest.param(
+        (AT, "R_austria"),
+        [],
+        dict(kernel="IR"),
+        marks=pytest.mark.skipif(
+            sys.version_info[1] <= 6 and sys.platform != "linux",
+            reason="R/reticulate link fails on GitHub Actions workers for Python 3.6",
+        ),
+    ),
+    pytest.param(
+        (AT, "R_austria_load_scenario"),
+        [],
+        dict(kernel="IR"),
+        marks=pytest.mark.skipif(
+            sys.version_info[1] <= 6 and sys.platform != "linux",
+            reason="R/reticulate link fails on GitHub Actions workers for Python 3.6",
+        ),
+    ),
 ]
 
-# Short, readable IDs for the tests
-ids = [arg[0][-1] for arg in tutorials]
+# Short, readable IDs for the tests. Use getattr() to unpack the values from
+# pytest.param()
+ids = [getattr(arg, "values", arg)[0][-1] for arg in tutorials]
+
+# List of data files required to run tutorials
+data_files = [
+    "westeros_baseline_demand.xlsx",
+    "westeros_baseline_technology_basic.xlsx",
+    "westeros_baseline_technology_constraint.xlsx",
+    "westeros_baseline_technology_economic.xlsx",
+    "westeros_baseline_technology_historic.xlsx",
+]
 
 
 @pytest.fixture
@@ -74,6 +104,11 @@ def test_tutorial(nb_path, cell_values, run_args, tmp_path, tmp_env):
     tmp_env["PYTHONPATH"] = path_sep.join(
         [str(nb_path.parent), tmp_env.get("PYTHONPATH", "")]
     )
+
+    # Copy necessary data files to tmp_path
+    if "westeros_baseline_using_xlsx_import_part2" in nb_path.parts[-1]:
+        for fil in data_files:
+            copyfile(nb_path.parent / fil, tmp_path / fil)
 
     # The notebook can be run without errors
     nb, errors = run_notebook(nb_path, tmp_path, tmp_env, **run_args)
