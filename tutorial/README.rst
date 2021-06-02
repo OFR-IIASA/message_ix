@@ -120,6 +120,9 @@ uses it to illustrate a range of framework features.
          (:tut:`westeros/westeros_baseline_using_xlsx_import_part1.ipynb`).
       #. Import data from multiple excel files to create a new scenario
          (:tut:`westeros/westeros_baseline_using_xlsx_import_part2.ipynb`).
+
+   #. Explore historical parameters and their usage
+      (:tut:`westeros/westeros_historical_new_capacity.ipynb`).
                
 #. After the MESSAGE model has solved, use the :mod:`.message_ix.reporting`
    module to ‘report’ results, e.g. do post-processing, plotting, and other
