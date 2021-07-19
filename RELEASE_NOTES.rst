@@ -1,8 +1,13 @@
-.. Next release
-.. ============
+Next release
+============
 
-.. All changes
-.. -----------
+All changes
+-----------
+
+- Update reference for activity and capacity soft constraints (:pull:`474`).
+- Update :meth:`.years_active` to use sorted results (:pull:`491`).
+- Adjust the Westeros reporting tutorial to pyam 1.0 deprecations (:pull:`492`).
+
 
 .. _v3.3.0:
 
