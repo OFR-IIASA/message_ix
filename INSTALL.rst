@@ -77,18 +77,19 @@ Using Anaconda
    Windows users should use the “Anaconda Prompt” to avoid issues with permissions and environment variables when installing and using |MESSAGEix|.
    This program is available in the Windows Start menu after installing Anaconda.
 
-6. Configure conda to install :mod:`message_ix` from the conda-forge channel [2]_::
+6. Configure conda to install :mod:`message_ix` from the conda-forge channel [2]_ [3]_::
 
     $ conda config --prepend channels conda-forge
+    $ conda config --set channel_priority strict
 
-7. Create a new conda enviroment.
+7. Create a new conda environment and activate it.
    This step is **required** if using Anaconda, but *optional* if using Miniconda.
    This example uses the name ``message_env``, but you can use any name of your choice::
 
     $ conda create --name message_env
     $ conda activate message_env
 
-8. Install the ``message-ix`` package into the current environment (either ``base``, or another name from step 7, e.g. ``message_env``) [3]_::
+8. Install the ``message-ix`` package into the current environment (either ``base``, or another name from step 7, e.g. ``message_env``) [4]_::
 
     $ conda install message-ix
 
@@ -99,7 +100,9 @@ Go to the section `Check that installation was successful`_.
 .. [1] See the `conda glossary`_ for the differences between Anaconda and Miniconda, and the definitions of the terms ‘channel’ and ‘environment’ here.
 .. [2] The ‘$’ character at the start of these lines indicates that the command text should be entered in the terminal or prompt, depending on the operating system.
        Do not retype the ‘$’ character itself.
-.. [3] Notice that conda uses the hyphen (‘-’) in package names, different from the underscore (‘_’) used in Python when importing the package.
+.. [3] "strict" channel priority ensures that conda will select the latest version of message_ix from the "noarch" channel, and ignore much older (v1.0.0) packages in OS-specific channels.
+       See `managing channels`_ of the Anaconda documentation for more information.
+.. [4] Notice that conda uses the hyphen (‘-’) in package names, different from the underscore (‘_’) used in Python when importing the package.
 
 .. note:: When using Anaconda (not Miniconda), steps (5) through (8) can also be performed using the graphical Anaconda Navigator.
    See the `Anaconda Navigator documentation`_ for how to perform the various steps.
@@ -224,6 +227,28 @@ To check which JVM will be used by ixmp, run the following in any prompt or term
     $ python -c "import jpype; print(jpype.getDefaultJVMPath())"
 
 
+“No module named 'pyam'”
+------------------------
+
+The package `pyam-iamc <https://pypi.org/project/pyam-iamc/>`_ is one of the "reporting" extra dependencies of :mod:`message_ix`.
+These extra dependencies are not installed automatically, but can be installed using::
+
+    # If message_ix is installed using pip
+    $ pip install message_ix[reporting]
+    # or
+    $ pip install pyam-iamc
+
+    # If message_ix is installed using Anaconda (see note below)
+    $ conda install pyam
+
+Note that this package has the *different* name on conda-forge versus PyPI: `pyam <https://anaconda.org/conda-forge/pyam>`__.
+
+The package listed as `pyam <https://pypi.org/project/pyam/>`__ on PyPI (and not available via Anaconda) is unrelated to :mod:`message_ix`, not compatible with it, and will produce other error messages.
+If you installed this package accidentally, remove it using::
+
+    # If installed using pip
+    $ pip uninstall pyam
+
 .. _`GAMS`: http://www.gams.com
 .. _`latest version`: https://www.gams.com/download/
 .. _`version 29`: https://www.gams.com/29/
@@ -242,3 +267,4 @@ To check which JVM will be used by ixmp, run the following in any prompt or term
 .. _`README`: https://github.com/iiasa/message_ix#install-from-source-advanced-users
 .. _`IRkernel`: https://irkernel.github.io/installation/
 .. _`these instructions`: https://javatutorial.net/set-java-home-windows-10
+.. _`managing channels`: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-channels.html
