@@ -9,6 +9,8 @@ All changes
 - Update reference for activity and capacity soft constraints (:pull:`474`).
 - Update :meth:`.years_active` to use sorted results (:pull:`491`).
 - Adjust the Westeros reporting tutorial to pyam 1.0 deprecations (:pull:`492`).
+- Change precision of GAMS check for parameter "duration_time" (:pull:`513`).
+- Update light and historic demand in Westeros baseline tutorial (:pull:`523`).
 
 
 .. _v3.3.0:
