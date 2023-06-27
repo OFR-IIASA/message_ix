@@ -10,7 +10,9 @@ put logfile ;
 option limrow = 0 ;     # number of rows (equations) reported in lst file
 option limcol = 0 ;     # number of columns reported in lst file
 option solprint = off ; # solver's solution output printed
-option savepoint = 0 ;  # creates a result gdx file after every solve
+option savepoint = 1 ;  # creates a result gdx file after every solve
+*option savepoint = 1 ;  # creates a result gdx file after every solve
+*$If exist MESSAGE_LP_p.gdx execute_loadpoint 'MESSAGE_LP_p';
 * this is done manually in this code to have the database name in the gdx file name and to save the file in a sub-folder
 
 option ITERLIM = 1e8 ;  # iteration limit
