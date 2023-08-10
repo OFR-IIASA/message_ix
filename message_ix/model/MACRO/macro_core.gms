@@ -198,10 +198,15 @@ KN(node_active, year) =E= duration_period(year) * I(node_active, year)
 *
 ***
 
+*NEW_PRODUCTION(node_active, year) $ (NOT macro_base_period(year))..
+*YN(node_active, year) =E=
+*( LAKL(node_active) * KN(node_active, year)**(rho(node_active) * kpvs(node_active)) * newlab(node_active, year)**(RHO(node_active) * (1 - kpvs(node_active)))
+*+ SUM(sector, PRFCONST(node_active, sector) * NEWENE(node_active, sector, year)**rho(node_active)) )**(1/rho(node_active))
+*;
 NEW_PRODUCTION(node_active, year) $ (NOT macro_base_period(year))..
 YN(node_active, year) =E=
-( LAKL(node_active) * KN(node_active, year)**(rho(node_active) * kpvs(node_active)) * newlab(node_active, year)**(RHO(node_active) * (1 - kpvs(node_active)))
-+ SUM(sector, PRFCONST(node_active, sector) * NEWENE(node_active, sector, year)**rho(node_active)) )**(1/rho(node_active))
+( LAKL(node_active) * K(node_active, year)**(rho(node_active) * kpvs(node_active)) * labor(node_active, year)**(RHO(node_active) * (1 - kpvs(node_active)))
++ SUM(sector, PRFCONST(node_active, sector) * PRODENE(node_active, sector, year)**rho(node_active)) )**(1/rho(node_active))
 ;
 
 ***
@@ -231,7 +236,8 @@ SUM(year2$( seq_period(year2,year) ), K(node_active, year2)) * (1 - depr(node_ac
 
 TOTAL_PRODUCTION(node_active, year) $ (NOT macro_base_period(year))..
 Y(node_active, year) =E=
-SUM(year2$( seq_period(year2,year) ), Y(node_active, year2)) * (1 - depr(node_active))**duration_period(year) + YN(node_active, year)
+*SUM(year2$( seq_period(year2,year) ), Y(node_active, year2)) * (1 - depr(node_active))**duration_period(year) + YN(node_active, year)
+YN(node_active, year)
 ;
 
 ***
